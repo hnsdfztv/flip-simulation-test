@@ -35,7 +35,7 @@ Store the repo somewhere.
 Run these commands in bash to install QEMU from the source. QEMU source tar is obtained from its official website.
 
 ```bash
-wget https://download.qemu.org/qemu-7.1.0.tar.xz –no-check-certificate
+wget https://download.qemu.org/qemu-7.1.0.tar.xz --no-check-certificate
 xz -d qemu-7.1.0.tar.xz
 tar -xvf qemu-7.1.0.tar
 cd qemu-7.1.0/
