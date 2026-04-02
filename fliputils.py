@@ -8,10 +8,20 @@
 import csv
 import os
 import random
+import shutil
 import subprocess
 import time
 
 from pygdbmi.gdbcontroller import GdbController
+
+# Create a GdbController instance to interact with gdb. It will try to find gdb-multiarch first, then fallback to gdb.
+# solve the bug of "Truncated register 37"
+def _create_gdb_controller() -> GdbController:
+    gdb_bin = shutil.which("gdb-multiarch") or shutil.which("gdb") or "gdb"
+    # Keep startup minimal and deterministic to avoid user plugins (e.g. pwndbg).
+    return GdbController(
+        command=[gdb_bin, "--quiet", "--nx", "--nh", "--interpreter=mi2"]
+    )
 
 
 def extract(file) -> dict:
@@ -154,7 +164,7 @@ def autoinject_ram(
     for k, v in address_dict.items():
         print(f"{k}: [0x{v[0][0]}, 0x{v[0][1]}]")
 
-    gdbmi, shouldexit = (GdbController(), True) if gdbmi is None else (gdbmi, False)
+    gdbmi, shouldexit = (_create_gdb_controller(), True) if gdbmi is None else (gdbmi, False)
 
     for _ in range(fault_number):
         flip_bit_in_area(address_dict, area, gdbmi, log_file=log_file)
@@ -180,7 +190,7 @@ def snapinject_ram(
     """
     # tmpname = uuid.uuid4().hex
     tmpname = "snapinject_begin"
-    gdbmi = GdbController()
+    gdbmi = _create_gdb_controller()
 
     vm_action("savevm", tmpname, gdbmi)
 
